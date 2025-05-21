@@ -1,0 +1,2 @@
+ALOAM:amcl:handsfree_ros_imu:imu:nav_pkg:openslam_gmapping:pcd2pgm_package-develop/pcd2pgm:ros_rslidar/rslidar:ros_rslidar/rslidar_driver:ros_rslidar/rslidar_msgs:ros_rslidar/rslidar_pointcloud:ros_rslidar/rslidar_sync:rs_to_velodyne:rslidar_sdk:scout_base:scout_ros/scout_bringup:scout_ros/scout_description:scout_ros/scout_msgs:slam_gmapping/gmapping:slam_gmapping/slam_gmapping:teb_local_planner:ugv_sdk
+-DCATKIN_DEVEL_PREFIX=/home/zk/catkin_zk/devel -DCMAKE_INSTALL_PREFIX=/home/zk/catkin_zk/install -G Unix Makefiles

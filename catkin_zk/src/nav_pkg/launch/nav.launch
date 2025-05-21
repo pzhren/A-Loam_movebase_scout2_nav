@@ -1,0 +1,21 @@
+
+<launch>
+
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find scout_bringup)/launch/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find scout_bringup)/launch/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find scout_bringup)/launch/local_costmap_params.yaml" command="load"/>
+
+    <!-- 根据你使用的局部规划器选择 -->
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+</node>
+    <!-- 启动 map_server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find scout_bringup)/map/map.yaml"/>
+    <!--- Run AMCL --> 
+    <!-- <include file="$(find scout_bringup)/launch/acml.launch" /> -->
+    <node pkg="amcl" type="amcl" name="amcl"/>
+        <!-- 运行rviz -->
+    <node pkg="rviz" type="rviz" name="rviz"/>
+
+</launch> 

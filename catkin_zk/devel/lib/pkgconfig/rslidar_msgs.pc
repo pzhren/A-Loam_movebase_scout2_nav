@@ -1,0 +1,8 @@
+prefix=/home/zk/catkin_zk/devel
+
+Name: rslidar_msgs
+Description: Description of rslidar_msgs
+Version: 1.0.0
+Cflags: -I/home/zk/catkin_zk/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime std_msgs

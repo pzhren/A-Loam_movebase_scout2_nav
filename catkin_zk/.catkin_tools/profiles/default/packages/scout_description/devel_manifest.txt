@@ -1,0 +1,4 @@
+scout_ros/scout_description
+/home/zk/catkin_ws/devel/.private/scout_description/share/scout_description/cmake/scout_descriptionConfig.cmake /home/zk/catkin_ws/devel/share/scout_description/cmake/scout_descriptionConfig.cmake
+/home/zk/catkin_ws/devel/.private/scout_description/share/scout_description/cmake/scout_descriptionConfig-version.cmake /home/zk/catkin_ws/devel/share/scout_description/cmake/scout_descriptionConfig-version.cmake
+/home/zk/catkin_ws/devel/.private/scout_description/lib/pkgconfig/scout_description.pc /home/zk/catkin_ws/devel/lib/pkgconfig/scout_description.pc

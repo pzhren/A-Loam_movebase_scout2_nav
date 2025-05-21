@@ -1,0 +1,5 @@
+<launch>
+    <!--设置地图的配置文件-->
+    <arg name="map" default="map6.yaml">
+    <node name="map_server" pkg="map_server" type="map_server" args="$/maps/$(arg map)">
+<launch>

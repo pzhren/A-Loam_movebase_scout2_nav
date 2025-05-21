@@ -1,0 +1,22 @@
+rosrun pcl_ros pointcloud_to_pcd input:=/rslidar_points
+
+rosrun pcl_ros pointcloud_to_pcd input:=/laser_cloud_surround
+
+roslaunch aloam_velodyne aloam_rslidar.launch
+启动底盘驱动
+1   sudo modprobe gs_usb
+2   sudo ip link set can0 up type can bitrate 500000  
+3   roslaunch scout_bringup scout_robot_base.launch	
+4   roslaunch scout_bringup scout_teleop_keyboard.launch
+    
+启动传感器：激光雷达和IMU
+1   #roslaunch scout_bringup open_rslidar.launch
+    roslaunch rslidar_sdk start.launch
+
+    rosrun map_server map_server /home/zk/catkin_zk/src/scout_ros/scout_bringup/map/map.yaml
+
+
+启动lio-sam
+启动pointscloud to laserscan节点
+rosrun rs_to_velodyne rs_aloam.launch XYZIRT XYZIRT
+启动move_base导航

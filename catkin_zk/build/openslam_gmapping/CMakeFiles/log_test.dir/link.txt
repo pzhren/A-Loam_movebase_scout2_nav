@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG  -rdynamic CMakeFiles/log_test.dir/log/log_test.cpp.o  -o /home/zk/catkin_zk/devel/lib/openslam_gmapping/log_test  -Wl,-rpath,/home/zk/catkin_zk/devel/lib: /home/zk/catkin_zk/devel/lib/liblog.so /home/zk/catkin_zk/devel/lib/libsensor_range.so /home/zk/catkin_zk/devel/lib/libsensor_odometry.so /home/zk/catkin_zk/devel/lib/libsensor_base.so 
