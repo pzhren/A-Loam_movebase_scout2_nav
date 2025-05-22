@@ -1,0 +1,24 @@
+<launch>
+  <!-- 启动雷达驱动 -->
+  <node pkg="rslidar_sdk" name="rslidar_sdk_node" type="rslidar_sdk_node" output="screen">
+    <remap from="rslidar_points" to="/laser"/>
+    <param name="config_path" value="$(find rslidar_sdk)/config/m1.yaml"/>
+  </node>
+
+  <!-- 广播雷达到 base_link 的静态 TF -->
+  <node pkg="tf" type="static_transform_publisher" name="rslidar_to_base_link"
+        args="0 0 0.3 0 0 0 base_link rslidar 100"/>
+
+  <!-- 将点云转换为 LaserScan -->
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+    <remap from="rslidar_points" to="/laser"/>
+    <remap from="scan" to="/scan"/>
+    <param name="target_frame" value="base_link"/>
+    <param name="min_height" value="-0.4"/>
+    <param name="max_height" value="0.4"/>
+    <param name="angle_min" value="-1.5708"/> 
+    <param name="angle_max" value="1.5708"/>  
+    <param name="range_max" value="10.0"/>
+  </node>
+
+</launch>
