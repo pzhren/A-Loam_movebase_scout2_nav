@@ -1,0 +1,111 @@
+<launch>
+
+    <!-- Load robot model -->
+    <group>
+        <param name="robot_description"
+               command="$(find xacro)/xacro $(find scout_description)/urdf/scout_v2.urdf"/>
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    </group>
+    <!-- Start rs_to_velodyne converter node -->
+    <!-- <node pkg="rs_to_velodyne" type="rs_to_velodyne" name="rs_to_velodyne" args="XYZI XYZIR" output="screen"/> -->
+
+    <param name="scan_line" type="int" value="32" />
+
+    <!-- if 1, do mapping 10 Hz, if 2, do mapping 5 Hz. Suggest to use 1, it will adjust frequence automaticlly -->
+    <param name="mapping_skip_frame" type="int" value="1" />
+
+    <!-- remove too closed points -->
+    <param name="minimum_range" type="double" value="0.3"/>
+
+    <param name="mapping_line_resolution" type="double" value="0.2"/>
+    <param name="mapping_plane_resolution" type="double" value="0.4"/>
+    <!-- IMU node -->
+    <!-- <include file="$(find handsfree_ros_imu)/launch/handsfree_imu.launch"/> -->
+    <!-- <node pkg="imu" type="imuDo" name="imu_node"/> -->
+
+    <!-- RSLIDAR SDK -->
+    <!-- <include file="$(find rslidar_sdk)/launch/start.launch"/> -->
+    <!-- <include file="$(find ALOAM)/launch/aloam_rslidar.launch"/> -->
+    <!-- <include file="$(find scout_bringup)/launch/open_rslidar.launch"/> -->
+    <!-- <node pkg="rslidar_sdk" name="rslidar_node" type="rslidar_sdk_node" output="screen">
+        <param name="config_path" value=""/>
+    </node> -->
+
+        <!--PointCloud to LaserScan-->
+    <!-- <include file="$(find rs_to_velodyne)/launch/velodyne.launch"/> -->
+    <!-- Static transforms -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom"
+          args="0 0 0 0 0 0 map odom 100"/> -->
+    <!-- <node pkg="tf" type="static_transform_publisher" name="odom_to_base_footprint"
+          args="0 0 0 0 0 0 odom base_link 100"/> -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom"
+          args="0 0 0 0 0 0 map odom 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="odom_to_base_footprint"
+          args="0 0 0 0 0 0 odom base_link 100"/>
+      <!-- 激光雷达到 base_link 的变换，请根据您的安装位置修改 -->
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser_link"
+          args="0.2 0 0.1 0 0 0 base_link laser 100"/>
+    <!-- <node pkg="tf" type="static_transform_publisher" name="rslidar_to_base_link_broadcaster"
+          args="0 0 0 0 0 0 rslidar base_link 100"/> -->
+
+
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_front_left_wheel"
+          args="0.31 0.21 0 0 0 0 base_link front_left_wheel_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_front_right_wheel"
+          args="0.31 -0.21 0 0 0 0 base_link front_right_wheel_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_rear_left_wheel"
+          args="-0.42 0.21 0 0 0 0 base_link rear_left_wheel_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_rear_right_wheel"
+          args="-0.42 -0.21 0 0 0 0 base_link rear_right_wheel_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_imu_broadcaster"
+          args="0 0 0 0 0 0  base_link imu 100"/>
+    <!-- <node pkg="tf" type="static_transform_publisher" name="base_link_to_imu_broadcaster"
+          args="0 0 0 0 0 0  base_link imu 100"/> -->
+
+    <!-- Map Server -->
+    
+
+
+    <!-- <node name="map_server" pkg="map_server" type="map_server"
+      args="$(find scout_bringup)/map/map.yaml" output="screen">
+    <param name="frame_id" value="map" />
+    </node> -->
+    <!-- <param name="/use_sim_time" type="bool" value="true"/> -->
+    <!-- AMCL Localization -->
+    <include file="$(find amcl)/my_amcl2.launch"/>
+
+  <arg name="no_static_map" default="false"/>
+
+    <arg name="base_global_planner" default="navfn/NavfnROS"/>
+    <!-- <arg name="base_local_planner" default="dwa_local_planner/DWAPlannerROS"/> -->
+    <arg name="base_local_planner" default="base_local_planner/TrajectoryPlannerROS"/>
+
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+
+        <param name="base_global_planner" value="$(arg base_global_planner)"/>
+        <param name="base_local_planner" value="$(arg base_local_planner)"/>  
+        <rosparam file="$(find scout_bringup)/param/planner.yaml" command="load"/>
+
+        <!-- observation sources located in costmap_common.yaml -->
+        <rosparam file="$(find scout_bringup)/param/costmap_common.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find scout_bringup)/param/costmap_common.yaml" command="load" ns="local_costmap" />
+
+        <!-- local costmap, needs size -->
+        <rosparam file="$(find scout_bringup)/param/costmap_local.yaml" command="load" ns="local_costmap" />
+        <param name="local_costmap/width" value="10.0"/>
+        <param name="local_costmap/height" value="10.0"/>
+
+        <!-- static global costmap, static map provides size -->
+        <rosparam file="$(find scout_bringup)/param/costmap_global_static.yaml" command="load" ns="global_costmap" unless="$(arg no_static_map)"/>
+        
+        <!-- global costmap with laser, for odom_navigation_demo -->
+        <rosparam file="$(find scout_bringup)/param/costmap_global_laser.yaml" command="load" ns="global_costmap" if="$(arg no_static_map)"/>
+        <param name="global_costmap/width" value="100.0" if="$(arg no_static_map)"/>
+        <param name="global_costmap/height" value="100.0" if="$(arg no_static_map)"/>
+        <param name='controller_frequency' value="50.0"/>
+    </node>
+
+    <!-- RVIZ -->
+    <node pkg="rviz" type="rviz" name="rviz"/>
+
+</launch>

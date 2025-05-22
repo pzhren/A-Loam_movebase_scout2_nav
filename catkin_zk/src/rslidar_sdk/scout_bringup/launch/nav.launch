@@ -1,0 +1,95 @@
+<launch>
+
+   <!-- 启动 robot_state_publisher -->
+    <!--
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+        <param name="publish_frequency" value="50"/>
+        <param name="use_tf_static" value="true"/>
+        <param name="frame_prefix" value=""/>
+        <param name="ignore_timestamp" value="false"/>
+        <param name="config_filename" value="$(find scout_description)/urdf/scout_v2.xacro"/>
+    </node>
+    -->
+
+
+<!-- Step 1: Load URDF from scout_description package -->
+    <group>
+        <param name="robot_description"
+               command="$(find xacro)/xacro $(find scout_description)/urdf/scout_mini.urdf.xacro"/>
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+    </group>
+
+    
+
+    <!-- Static transforms -->
+    <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
+          args="0 0 0 0 0 0 base_footprint base_link 100"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="odom_to_base_footprint"
+          args="0 0 0 0 0 0 odom base_footprint 100"/>
+    <!-- map -> odom -->
+    <node pkg="tf" type="static_transform_publisher" name="map_to_odom"
+          args="0 0 0 0 0 0 map odom 100"/>
+
+        <!-- Start the laser scanner driver -->
+    <include file="$(find scout_bringup)/launch/open_rslidar.launch"/>
+    <!-- <node pkg="rslidar_sdk" name="rslidar_node" type="rslidar_sdk_node" output="screen">
+        <param name="config_path" value=""/>
+    </node> -->
+    <!-- Step 4: Convert point cloud to Velodyne format (if needed) -->
+    <node pkg="rs_to_velodyne" type="rs_to_velodyne" name="rs_to_velodyne" args="XYZI XYZIR" output="screen"/>
+
+    <!-- Step 5: Mapping and scan parameters -->
+    <param name="scan_line" type="int" value="32" />
+    <param name="mapping_skip_frame" type="int" value="1" />
+    <param name="minimum_range" type="double" value="0.3"/>
+    <param name="mapping_line_resolution" type="double" value="0.2"/>
+    <param name="mapping_plane_resolution" type="double" value="0.4"/>
+
+    <!-- 启动 map_server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find scout_bringup)/map/map.yaml"/>
+
+    <!-- Start AMCL localization -->
+    <include file="src/scout_ros/scout_bringup/launch/acml.launch"/>
+    <!--<include file="$(find pointcloud_to_laserscan)/launch/sample_nodelet.launch"/>
+
+    <node pkg="laser_scan_matcher_odometry" type="laser_scan_matcher_odometry_node"
+          name="laser_scan_matcher_odometry_node" output="screen">
+        <param name="fixed_frame" value="odom" />
+        <param name="base_frame" value="base_link" />
+        <param name="max_iterations" value="10" />
+    </node> -->
+    <!-- 启动 AMCL -->
+    <!-- <node pkg="amcl" type="amcl" name="amcl">
+        <param name="odom_frame_id" value="odom"/>
+        <param name="base_frame_id" value="base_link"/>
+        <param name="global_frame_id" value="map"/>
+
+    </node> -->
+    <!-- Start move_base navigation -->
+    <!--<include file="$(find scout_bringup)/launch/move_base.launch.xml"/>-->
+
+    <!-- <node pkg="move_base" type="move_base" name="move_base">
+        <rosparam file="$(find scout_bringup)/launch/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find scout_bringup)/launch/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find scout_bringup)/launch/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find scout_bringup)/launch/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find scout_bringup)/launch/teb_local_planner.yaml" command="load" />
+        <param name="base_global_planner" value="navigation/global_planner"/>
+        <param name="base_local_planner" value="navigation/dwa_local_planner"/>
+    </node> -->
+    <!-- 启动 move_base -->
+<!-- move_base.launch -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+          <rosparam file="$(find scout_bringup)/launch/costmap_common_params.yaml" command="load" ns="global_costmap" />
+          <rosparam file="$(find scout_bringup)/launch/global_costmap_params.yaml" command="load"/>
+          <rosparam file="$(find scout_bringup)/launch/local_costmap_params.yaml" command="load"/>
+          <rosparam file="$(find scout_bringup)/launch/base_local_planner_params.yaml" command="load"/>
+          <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    </node>
+
+    
+    <!-- 启动 RVIZ -->
+    <node pkg="rviz" type="rviz" name="rviz" />
+
+</launch>

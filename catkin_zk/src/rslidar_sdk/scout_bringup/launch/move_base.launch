@@ -1,0 +1,58 @@
+<!--   
+Copyright: 2016-2019 ROS小课堂 www.corvin.cn   
+Author: corvin   
+Description: 该启动文件用于加载自定义的home地图,这样就可以进行自动导航了.   
+History:     
+    20190102: initial this file. 
+--> 
+<launch> 
+    <!-- <include file="$(find rslidar_sdk)/launch/start.launch"/>
+    <node pkg="rslidar_sdk" name="rslidar_node" type="rslidar_sdk_node" output="screen">
+       <param name="config_path" value=""/>
+    </node> -->
+    <!-- Start rs_to_velodyne converter node -->
+    <node pkg="rs_to_velodyne" type="rs_to_velodyne" name="rs_to_velodyne" args="XYZI XYZIR" output="screen"/>
+
+    <param name="scan_line" type="int" value="32" />
+
+    <!-- if 1, do mapping 10 Hz, if 2, do mapping 5 Hz. Suggest to use 1, it will adjust frequence automaticlly -->
+    <param name="mapping_skip_frame" type="int" value="1" />
+
+    <!-- remove too closed points -->
+    <param name="minimum_range" type="double" value="0.3"/>
+
+    <param name="mapping_line_resolution" type="double" value="0.2"/>
+    <param name="mapping_plane_resolution" type="double" value="0.4"/>
+
+    <!-- Robot State Publisher -->
+    <!-- <param name="scout_description" command="src/scout_ros/scout_bringup/launch/scout_v2.xacro"/> -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+    <!-- Static transforms -->
+    <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_base_link"
+        args="0 0 0 0 0 0 base_footprint base_link 100"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="odom_to_base_footprint"
+        args="0 0 0 0 0 0 odom base_footprint 100"/>
+    <!-- 设置一个/odom与/map之间的静态坐标变换 -->
+    <node pkg="tf" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 /map /odom 100" />
+
+    <!-- load home map -->
+    <arg name="map" default="map.yaml"/>   
+    <node pkg="map_server" type="map_server" name="map_server" args="$(find scout_bringup)/map/$(arg map)"/>     
+        <remap from="map" to="/amcl/map" /> 
+    <!-- 启动AMCL节点 -->
+    <node pkg="acml" type="acml" output="screen">
+            <rosparam file="$(find scout_description)/param/amcl_params.yaml"> 
+    <include file="$(find scout_bringup)/launch/acml.launch" />
+    <!-- 设置参数 -->
+    <param name="robot_description" textfile="$(find scout_description)/urdf/empty.urdf" />
+
+    <!-- 下面两行是重点 -->
+    <!-- 启动 机器人状态发布节点  与  关节状态发布节点 --> 
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" />
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher" />
+    <!-- 运行rviz -->
+    <node pkg="rviz" type="rviz" name="rviz"/>
+</launch>
+
