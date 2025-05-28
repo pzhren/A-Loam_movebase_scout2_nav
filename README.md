@@ -73,3 +73,25 @@ ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/points_
 ![image](https://github.com/user-attachments/assets/f65b4a8f-e2ba-4a7d-930d-1a73fd9fb24d)
 
 
+Scout2 导航系统方案(amcl 定位+map server+movebase导航)，导航部分
+
+## 新建scout_ws空间，编写小车启动launch文件，包括以下几个部分：
+
+1 小车模型：下载scout_ros自带的scout_v2.urdf,  改写4轮坐标系到小车本体base_link的转换
+
+2 激光雷达：下载速腾激光雷达驱动，对雷达参数，包括雷达类型和坐标系改写，打开激光雷达
+
+3 点云转换激光雷达扫描数据：下载pointcloud_to_laserscan包，获取速腾rslidar_points节点到laser转        
+换。
+```
+git clone https://github.com/ros-perception/pointcloud_to_laserscan/tree/lunar-devel
+```
+ 更改launch文件，sample_node.launch里面 <remap from="cloud_in" to="$(arg camera)/depth_registered/points_processed"/>
+ 为 <remap from="cloud_in" to="/rslidar_points"/>
+4 打开地图服务：将图进行节点发布，并编写图的中心点，占用率等参数
+
+5 编写map→odom→baselink 的tf转换树，进行坐标系转换
+
+6 下载AMCL 自适应蒙特卡洛粒子波定位包，初始化小车位置，里程计坐标，小车坐标和地图坐标，运行AMCL定位节点
+
+ 7 下载movebase导航包，编写局部teb动态窗口局部规划参数，navfn全局规划参数，常规代价地图，全局代价地图，局部代价地图参数文件,启动导航
