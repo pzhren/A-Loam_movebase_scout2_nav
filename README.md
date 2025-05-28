@@ -79,8 +79,12 @@ Scout2 导航系统方案(amcl 定位+map server+movebase导航)，导航部分
 
 1 小车模型：下载scout_ros自带的scout_v2.urdf,  改写4轮坐标系到小车本体base_link的转换
 launch文件在scout_ros/bringup/nav4，主要更改里面move_base节点，4个yaml文件参数
+ vscode 打开catkin_zk
 
 2 激光雷达：下载速腾激光雷达驱动，对雷达参数，包括雷达类型和坐标系改写，打开激光雷达
+```
+roslaunch rslidar_sdk start.launch
+```
 
 3 点云转换激光雷达扫描数据：下载pointcloud_to_laserscan包，获取速腾rslidar_points节点到laser转        
 换。
